@@ -365,6 +365,7 @@ typedef struct {
     char *buf;
     const size_t buflen;
     const char *format;
+    const char *format_usage;
     const char *format_above_threshold;
     const char *format_above_degraded_threshold;
     const char *path;
