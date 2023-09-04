@@ -392,6 +392,7 @@ int main(int argc, char *argv[]) {
 
     cfg_opt_t usage_opts[] = {
         CFG_STR("format", "%usage", CFGF_NONE),
+        CFG_STR("format_usage", "%02d%s", CFGF_NONE),
         CFG_STR("format_above_threshold", NULL, CFGF_NONE),
         CFG_STR("format_above_degraded_threshold", NULL, CFGF_NONE),
         CFG_STR("path", "/proc/stat", CFGF_NONE),
@@ -945,6 +946,7 @@ int main(int argc, char *argv[]) {
                     .buf = buffer,
                     .buflen = sizeof(buffer),
                     .format = cfg_getstr(sec, "format"),
+                    .format_usage = cfg_getstr(sec, "format_usage"),
                     .format_above_threshold = cfg_getstr(sec, "format_above_threshold"),
                     .format_above_degraded_threshold = cfg_getstr(sec, "format_above_degraded_threshold"),
                     .path = cfg_getstr(sec, "path"),
