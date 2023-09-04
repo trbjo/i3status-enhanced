@@ -88,7 +88,8 @@ typedef struct {
 #endif
     int quality;
     int quality_max;
-    int quality_average;
+    int quality_good;
+    int quality_degraded;
     int signal_level;
     int signal_level_max;
     int noise_level;
@@ -200,7 +201,8 @@ static int gwi_sta_cb(struct nl_msg *msg, void *data) {
         info->flags |= WIRELESS_INFO_FLAG_HAS_QUALITY;
         info->quality = nl80211_xbm_to_percent(info->signal_level, 1);
         info->quality_max = 100;
-        info->quality_average = 50;
+        info->quality_good = 80;
+        info->quality_degraded = 50;
     }
 
     return NL_SKIP;
@@ -256,7 +258,8 @@ static int gwi_scan_cb(struct nl_msg *msg, void *data) {
         info->flags |= WIRELESS_INFO_FLAG_HAS_QUALITY;
         info->quality = info->signal_level;
         info->quality_max = 100;
-        info->quality_average = 50;
+        info->quality_good = 80;
+        info->quality_degraded = 50;
     }
 
     if (bss[NL80211_BSS_SIGNAL_MBM]) {
@@ -266,7 +269,8 @@ static int gwi_scan_cb(struct nl_msg *msg, void *data) {
         info->flags |= WIRELESS_INFO_FLAG_HAS_QUALITY;
         info->quality = nl80211_xbm_to_percent(nla_get_u32(bss[NL80211_BSS_SIGNAL_MBM]), 100);
         info->quality_max = 100;
-        info->quality_average = 50;
+        info->quality_good = 80;
+        info->quality_degraded = 50;
     }
 
     if (bss[NL80211_BSS_INFORMATION_ELEMENTS]) {
@@ -481,7 +485,8 @@ error1:
                         info->quality = abs(2 * (info->signal_level + 100));
                 }
                 info->quality_max = 100;
-                info->quality_average = 50;
+                info->quality_good = 80;
+                info->quality_degraded = 50;
 
                 info->flags |= WIRELESS_INFO_FLAG_HAS_QUALITY;
                 info->flags |= WIRELESS_INFO_FLAG_HAS_SIGNAL;
@@ -555,9 +560,13 @@ void print_wireless_info(wireless_info_ctx_t *ctx) {
         START_COLOR("color_bad");
     } else {
         walk = ctx->format_up;
-        if (info.flags & WIRELESS_INFO_FLAG_HAS_QUALITY)
-            START_COLOR((info.quality < info.quality_average ? "color_degraded" : "color_good"));
-        else {
+        if (info.flags & WIRELESS_INFO_FLAG_HAS_QUALITY) {
+            if (info.quality > info.quality_good) {
+                START_COLOR("color_good");
+            } else if (info.quality < info.quality_degraded) {
+                START_COLOR("color_degraded");
+            }
+        } else {
             if (BEGINS_WITH(ip_address, "no IP")) {
                 START_COLOR("color_degraded");
             } else {
